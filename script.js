@@ -7,25 +7,24 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     const method = document.getElementById('method').value;
   
     try {
-      // Replace with your Google Apps Script URL
-      const scriptUrl = 'https://script.google.com/.../exec';
-      
-      // Send data to Google Sheets=
+      // ✅ Replace with YOUR Google Apps Script URL
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycby5BQ5i1pzhpO8AKpM6QhjkZKbUZDzHL3nIorSWiapNL8sfZqHo7hizKwH-EJQtWcOpYg/exec';
+  
+      // Send data to Google Sheets
       const response = await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, method })
       });
   
-      if (!response.ok) throw new Error('Failed to submit');
+      if (!response.ok) throw new Error('Submission failed');
   
-      // Open WhatsApp or email
+      // Open WhatsApp or reset form
       if (method === 'whatsapp') {
         const message = `Hi! We’ll contact you shortly!%0A%0AName: ${name}%0AEmail: ${email}%0APhone: ${phone}`;
-        window.open(`https://wa.me/91YOUR_WHATSAPP_NUMBER?text=${message}`, '_blank');
+        window.open(`https://wa.me/+917892119416?text=${message}`, '_blank'); // ✅ Replace with your WhatsApp number
       }
   
-      // Reset form
       document.getElementById('contactForm').reset();
       alert('Thank you! We’ll respond shortly.');
       
