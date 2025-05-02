@@ -8,7 +8,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
   
     try {
       // ✅ Replace with YOUR Google Apps Script URL
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycby5BQ5i1pzhpO8AKpM6QhjkZKbUZDzHL3nIorSWiapNL8sfZqHo7hizKwH-EJQtWcOpYg/exec';
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbzvZAg6M7ToGpkc3zZCKM0odZPGUJ9e0Vufld1mnHn735GadzuEUn1P-xYrLhR0dDl-_Q/exec';
   
       // Send data to Google Sheets
       const response = await fetch(scriptUrl, {
