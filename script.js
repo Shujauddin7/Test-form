@@ -7,23 +7,25 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     const method = document.getElementById('method').value;
   
     try {
-      // ✅ Replace with YOUR DEPLOYED SCRIPT URL
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwkRUNzs6gcTX21MXTNAKtmmyNN-FAM3JhTI8IBhLG2YirBH1kO8I5gWdGKZ1lL37Ju4Q/exec';
+      // ✅ Replace with your deployed script URL
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycby0IjAh6GldBaOMw--H-SbtxdFWQc3fJLShlrwZ-lVp0w2QH0dOIsEOQ1iLm4hU1v6ipQ/exec';
   
-      // Send data to Google Sheets
       const response = await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, method }),
-        mode: 'cors' // Critical for CORS!
+        mode: 'cors'
       });
   
-      if (!response.ok) throw new Error('Submission failed');
+      const result = await response.json();
+      
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Submission failed');
+      }
   
-      // Open WhatsApp
       if (method === 'whatsapp') {
         const message = `Hi! We’ll contact you shortly!%0A%0AName: ${name}%0AEmail: ${email}%0APhone: ${phone}`;
-        window.open(`https://wa.me/+917892119416?text=${message}`, '_blank'); // ✅ Dynamic number
+        window.open(`https://wa.me/+917892119416?text=${message}`, '_blank');
       }
   
       document.getElementById('contactForm').reset();
@@ -31,6 +33,6 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
       
     } catch (error) {
       alert('Error submitting form. Please try again.');
-      console.error(error);
+      console.error('Submission error:', error);
     }
   });
