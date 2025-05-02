@@ -12,12 +12,6 @@ body {
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease-in;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
   }
   
   h1 {
@@ -28,36 +22,26 @@ body {
   
   input, select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 16px;
-    transition: border-color 0.3s;
-  }
-  
-  input:focus, select:focus {
-    border-color: #25D366;
-    outline: none;
+    box-sizing: border-box;
   }
   
   button {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     background: #25D366;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    transition: background 0.3s, transform 0.3s;
+    transition: background 0.3s ease;
   }
   
   button:hover {
     background: #128C7E;
-    transform: scale(1.05);
-  }
-  
-  button:active {
-    transform: scale(0.95);
   }
