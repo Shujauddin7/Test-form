@@ -1,29 +1,35 @@
 document.getElementById('contactForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Get form values
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
+    let phone = document.getElementById('phone').value.trim();
     const method = document.getElementById('method').value;
   
+    // Validate phone number format
+    if (!phone.startsWith('+')) {
+      phone = `+91${phone}`; // Prepend country code if missing
+    }
+  
     try {
-      // ✅ Replace with YOUR DEPLOYED SCRIPT URL
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwwrtcZV8fWyWB0rRloezsBiQmZD3Dy0ityJ2eBMuHsV4C0g5WVhIlVhN6rldFPwQXr1Q/exec';
+      // ✅ REPLACE THIS WITH YOUR ACTUAL SCRIPT URL
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbxge16e3cuiXDczjqvHSWenO7x3JPEIQldQHpBdQB_CD07rt5z9MvttRwtefUR5Qrbw/exec';
       
-      // Add cache-buster parameter
+      // Add cache-buster to URL
       const uniqueUrl = `${scriptUrl}?t=${Date.now()}`;
   
       const response = await fetch(uniqueUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, method }),
-        redirect: 'follow',
-        mode: 'cors'
+        mode: 'cors',
+        redirect: 'follow'
       });
   
-      // Handle Google Script redirect
+      // Handle Google Script's redirect
       const result = await response.json();
-      
+  
       if (!response.ok || result.error) {
         throw new Error(result.error || 'Server error');
       }
@@ -35,10 +41,10 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
       }
   
       document.getElementById('contactForm').reset();
-      alert('Thank you! We’ll respond shortly.');
+      alert('Submitted successfully! We’ll respond shortly.');
       
     } catch (error) {
-      alert('Error submitting form. Please try again.');
+      alert(`Error: ${error.message}`);
       console.error('Submission error:', error);
     }
   });
