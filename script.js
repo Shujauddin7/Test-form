@@ -45,6 +45,6 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
       
     } catch (error) {
       alert(`Error: ${error.message}`);
-      console.error('Submission error:', error);
+     
     }
   });
