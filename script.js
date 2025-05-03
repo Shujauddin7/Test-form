@@ -48,85 +48,38 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     
       try {
-        // FIXED: Use the correct Apps Script URL and deployment ID
-        // Replace this URL with your actual deployment URL from Google Apps Script
-        const scriptUrl = 'AKfycbxHtHRpooz02t5sZhra5mYV-hazFxsvZQnkGuu5oSVWpxVnvZz-d_NJ7C4tvlOmSrJi';
+        // FIXED: No space before URL, correct formatting
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxHtHRpooz02t5sZhra5mYV-hazFxsvZQnkGuu5oSVWpxVnvZz-d_NJ7C4tvlOmSrJi/exec';
         
-        // Add a cache-busting parameter
-        const uniqueUrl = `${scriptUrl}?t=${Date.now()}`;
-  
-        const formData = {
-          name: name,
-          email: email,
-          phone: phone,
-          method: method
-        };
+        // FIXED: Create a direct form submission - simpler approach
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('phone', phone);
+        formData.append('method', method);
         
-        // SOLUTION 1: Using JSONP approach (for CORS bypass)
-        // Create a form element to submit as JSONP-like approach
-        const formToSubmit = document.createElement('form');
-        formToSubmit.method = 'POST';
-        formToSubmit.action = uniqueUrl;
-        formToSubmit.target = 'hiddenFrame';
+        // FIXED: Simpler fetch with no-cors mode
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          mode: 'no-cors', // This is critical for cross-domain requests
+          body: formData
+        });
         
-        // Add form fields
-        for (const key in formData) {
-          const hiddenField = document.createElement('input');
-          hiddenField.type = 'hidden';
-          hiddenField.name = key;
-          hiddenField.value = formData[key];
-          formToSubmit.appendChild(hiddenField);
+        // Since we're using no-cors mode, we won't get a standard response
+        // So we'll just assume success if no error was thrown
+        showStatus("Form submitted successfully! We'll contact you shortly.");
+        contactForm.reset();
+        
+        // Open WhatsApp chat if selected
+        if (method === 'whatsapp') {
+          const message = `Hi! I'm ${name}. I'd like to get in touch.`;
+          window.open(`https://wa.me/7892119416?text=${encodeURIComponent(message)}`, '_blank');
         }
-        
-        // Create hidden iframe to receive response
-        const hiddenFrame = document.createElement('iframe');
-        hiddenFrame.name = 'hiddenFrame';
-        hiddenFrame.style.display = 'none';
-        document.body.appendChild(hiddenFrame);
-        document.body.appendChild(formToSubmit);
-        
-        // Set up message event listener to receive response from iframe
-        window.addEventListener('message', function(event) {
-          if (event.data.status === 'success') {
-            showStatus("Form submitted successfully! We'll contact you shortly.");
-            contactForm.reset();
-            
-            // Open WhatsApp chat if selected
-            if (method === 'whatsapp') {
-              const message = `Hi! I'm ${name}. I'd like to get in touch.`;
-              window.open(`https://wa.me/7892119416?text=${encodeURIComponent(message)}`, '_blank');
-            }
-          } else if (event.data.error) {
-            showStatus(`Error: ${event.data.error}`, true);
-          }
-          
-          // Clean up
-          if (document.body.contains(formToSubmit)) {
-            document.body.removeChild(formToSubmit);
-          }
-          if (document.body.contains(hiddenFrame)) {
-            document.body.removeChild(hiddenFrame);
-          }
-          
-          submitBtn.disabled = false;
-          submitBtn.classList.remove('loading');
-        }, false);
-        
-        // Submit the form
-        formToSubmit.submit();
-        
-        // Set a timeout in case we don't get a response
-        setTimeout(() => {
-          if (submitBtn.disabled) {
-            showStatus("Form submitted! If you don't hear back, please try again or contact us directly.", true);
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('loading');
-          }
-        }, 5000);
         
       } catch (error) {
         console.error('Submission error:', error);
-        showStatus(`Error: Failed to fetch. Please try again later.`, true);
+        showStatus(`Error: Failed to submit form. Please try again later.`, true);
+      } finally {
         submitBtn.disabled = false;
         submitBtn.classList.remove('loading');
       }
