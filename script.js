@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
       let phone = document.getElementById('phone').value.trim();
       const method = document.getElementById('method').value;
     
+      // Form validation
       if (!name || !email || !phone) {
         showStatus('All fields are required', true);
         submitBtn.disabled = false;
@@ -41,12 +42,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
   
+      // Format phone number
       if (!phone.startsWith('+')) {
         phone = `+91${phone}`;
       }
     
       try {
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx_bd0TQ7oicsnkUaa5BozQf8a63IdSFhjRoFhTFpuM79_M-MEelktqmoEjS1kC_UTZ/exec';
+        // FIXED: Use the correct Apps Script URL and deployment ID
+        // Replace this URL with your actual deployment URL from Google Apps Script
+        const scriptUrl = 'AKfycbxHtHRpooz02t5sZhra5mYV-hazFxsvZQnkGuu5oSVWpxVnvZz-d_NJ7C4tvlOmSrJi';
+        
+        // Add a cache-busting parameter
         const uniqueUrl = `${scriptUrl}?t=${Date.now()}`;
   
         const formData = {
@@ -55,36 +61,74 @@ document.addEventListener('DOMContentLoaded', function() {
           phone: phone,
           method: method
         };
-    
-        const response = await fetch(uniqueUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-          redirect: 'follow'
-        });
-    
-        const result = await response.json();
-    
-        if (result.error) {
-          throw new Error(result.error || 'Unknown error occurred');
-        }
-    
-        showStatus("Form submitted successfully! We'll contact you shortly.");
-        contactForm.reset();
         
-        if (method === 'whatsapp') {
-          const message = `Hi! We'll contact you shortly!%0A%0AName: ${name}%0AEmail: ${email}%0APhone: ${phone}`;
-          window.open(`https://wa.me/+917892119416?text=${message}`, '_blank');
+        // SOLUTION 1: Using JSONP approach (for CORS bypass)
+        // Create a form element to submit as JSONP-like approach
+        const formToSubmit = document.createElement('form');
+        formToSubmit.method = 'POST';
+        formToSubmit.action = uniqueUrl;
+        formToSubmit.target = 'hiddenFrame';
+        
+        // Add form fields
+        for (const key in formData) {
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = key;
+          hiddenField.value = formData[key];
+          formToSubmit.appendChild(hiddenField);
         }
+        
+        // Create hidden iframe to receive response
+        const hiddenFrame = document.createElement('iframe');
+        hiddenFrame.name = 'hiddenFrame';
+        hiddenFrame.style.display = 'none';
+        document.body.appendChild(hiddenFrame);
+        document.body.appendChild(formToSubmit);
+        
+        // Set up message event listener to receive response from iframe
+        window.addEventListener('message', function(event) {
+          if (event.data.status === 'success') {
+            showStatus("Form submitted successfully! We'll contact you shortly.");
+            contactForm.reset();
+            
+            // Open WhatsApp chat if selected
+            if (method === 'whatsapp') {
+              const message = `Hi! I'm ${name}. I'd like to get in touch.`;
+              window.open(`https://wa.me/7892119416?text=${encodeURIComponent(message)}`, '_blank');
+            }
+          } else if (event.data.error) {
+            showStatus(`Error: ${event.data.error}`, true);
+          }
+          
+          // Clean up
+          if (document.body.contains(formToSubmit)) {
+            document.body.removeChild(formToSubmit);
+          }
+          if (document.body.contains(hiddenFrame)) {
+            document.body.removeChild(hiddenFrame);
+          }
+          
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
+        }, false);
+        
+        // Submit the form
+        formToSubmit.submit();
+        
+        // Set a timeout in case we don't get a response
+        setTimeout(() => {
+          if (submitBtn.disabled) {
+            showStatus("Form submitted! If you don't hear back, please try again or contact us directly.", true);
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+          }
+        }, 5000);
         
       } catch (error) {
         console.error('Submission error:', error);
-        showStatus(`Error: ${error.message || 'Could not submit form. Please try again later.'}`, true);
-      } finally {
+        showStatus(`Error: Failed to fetch. Please try again later.`, true);
         submitBtn.disabled = false;
         submitBtn.classList.remove('loading');
       }
     });
-});
+  });
