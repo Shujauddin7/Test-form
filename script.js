@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
       try {
         // FIXED: No space before URL, correct formatting
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxHtHRpooz02t5sZhra5mYV-hazFxsvZQnkGuu5oSVWpxVnvZz-d_NJ7C4tvlOmSrJi/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwYMuvJv0cjBceN7LngegWwacfhX9xWBfQ7VkBG28O1iwRw1HV-Pf2eCZNbCcjIvNod/exec';
         
         // FIXED: Create a direct form submission - simpler approach
         const formData = new FormData();
