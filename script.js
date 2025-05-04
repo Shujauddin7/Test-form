@@ -54,19 +54,24 @@ document.addEventListener('DOMContentLoaded', function() {
   
     try {
       // Your deployed Apps Script URL - MAKE SURE THIS IS CORRECT AND UPDATED
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbxkZ4yIv1PAc7ITY7CGvRmwuUt95FaJhuEZmE2LuXReskna81ac6Mtble6OJHW3XwXHHw/exec';
+      // You'll need to replace this with your new deployment URL from step 2
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwmO23gVLa85ZLNDZt2_w7e1hNj6HDSBMnkWkLmkoHKAJza7jzJeokuCI_D-ox_Mnn6hA/exec';
       console.log('Submitting to URL:', scriptUrl);
       
-      // APPROACH 1: Using URLSearchParams (recommended)
+      // Create form data
       const formData = new URLSearchParams();
       formData.append('name', name);
       formData.append('email', email);
       formData.append('phone', phone);
       formData.append('method', method);
+      formData.append('timestamp', new Date().toISOString()); // Add timestamp to avoid caching issues
       
       console.log('Form data prepared:', formData.toString());
       
-      // First try with CORS mode to see if we can get a response
+      let successFlag = false;
+      let responseText = '';
+      
+      // First try with CORS mode
       try {
         console.log('Attempting fetch with CORS mode');
         const response = await fetch(scriptUrl, {
@@ -74,38 +79,55 @@ document.addEventListener('DOMContentLoaded', function() {
           mode: 'cors',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'Cache-Control': 'no-cache'
           },
           body: formData.toString()
         });
         
         console.log('Response received:', response);
-        const responseText = await response.text();
+        responseText = await response.text();
         console.log('Response text:', responseText);
         
-        showStatus("Form submitted successfully! We'll contact you shortly.");
-        contactForm.reset();
+        if (response.ok) {
+          successFlag = true;
+        } else {
+          console.warn('Response not OK:', response.status);
+        }
       } catch (corsError) {
         console.log('CORS fetch failed, trying no-cors mode:', corsError);
         
         // Fallback to no-cors if CORS fails
-        await fetch(scriptUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: formData.toString()
-        });
-        
-        console.log('no-cors fetch completed');
-        showStatus("Form submitted successfully! We'll contact you shortly.");
-        contactForm.reset();
+        try {
+          await fetch(scriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Cache-Control': 'no-cache'
+            },
+            body: formData.toString()
+          });
+          
+          console.log('no-cors fetch completed');
+          successFlag = true; // Assume success since no-cors doesn't return response details
+        } catch (noCorsError) {
+          console.error('no-cors fetch also failed:', noCorsError);
+          throw noCorsError;
+        }
       }
       
-      // Open WhatsApp chat if selected
-      if (method === 'whatsapp') {
-        const message = `Hi! I'm ${name}. I'd like to get in touch.`;
-        window.open(`https://wa.me/7892119416?text=${encodeURIComponent(message)}`, '_blank');
+      if (successFlag) {
+        showStatus("Form submitted successfully! We'll contact you shortly.");
+        contactForm.reset();
+        
+        // Open WhatsApp chat if selected
+        if (method === 'whatsapp') {
+          const message = `Hi! I'm ${name}. I'd like to get in touch.`;
+          window.open(`https://wa.me/7892119416?text=${encodeURIComponent(message)}`, '_blank');
+        }
+      } else {
+        // If we got a response but it wasn't successful
+        showStatus(`Error: Form submission failed. ${responseText || 'Please try again.'}`, true);
       }
       
     } catch (error) {
